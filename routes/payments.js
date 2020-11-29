@@ -1,16 +1,27 @@
 var express = require('express');
-var mongodb = require('./mongodb_client')
+var payments_dao = require('../dao/payments_dao');
 
 var router = express.Router();
 
-dbName = "apartment"
-paymentsCollection = "payments"
-
 router.post('/', function(req, res, next) {
-  mongodb.insertDocument(db, paymentsCollection, req.body)
-  res.json({ inserted: true });
+
+  payments_dao.insertPayment(req.body, function(err, doc, num_rows) {
+      if(!err) {
+        res.json({inserted: 1})
+      } else {
+        res.status(412)
+        res.json({error: err})
+      }
+  });
 });
+
 router.get('/', function(req, res, next) {
-  mongodb.getDocuments(db, paymentsCollection, res)
+
+  let page = parseInt(req.query.page);
+  let limit = parseInt(req.query.limit);
+
+  payments_dao.getPayments(page, limit, function(err, docs){
+    res.json(docs);
+  });
 });
 module.exports = router;

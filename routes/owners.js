@@ -1,18 +1,24 @@
 var express = require('express');
 var router = express.Router();
-
-var mongodb = require('./mongodb_client')
-
-db = "apartment"
-url = "mongodb://localhost:27017/"
-ownersCollection = "owners"
+var owners_dao = require('../dao/owners_dao');
 
 router.post('/', function(req, res, next) {
-  mongodb.insertDocument(db, ownersCollection, req.body)
-  res.json({ inserted: true });
+  owners_dao.insertOwner(req.body, function(err, doc, num_rows) {
+      if(!err) {
+        res.json({inserted: 1})
+      } else {
+        res.status(412)
+        res.json({error: err})
+      }
+  });
 });
 router.get('/', function(req, res, next) {
-  mongodb.getDocuments(db, ownersCollection, res)
+  let page = parseInt(req.query.page);
+  let limit = parseInt(req.query.limit);
+
+  owners_dao.getOwners(page, limit, function(err, docs){
+    res.json(docs);
+  });
 });
 
 module.exports = router;
